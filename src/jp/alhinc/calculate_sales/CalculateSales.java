@@ -41,7 +41,6 @@ public class CalculateSales {
 		}
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
-		//売上ファイルの選別、読み込み
 
 		//コマンドライン引数で渡されたパスのファイルを配列として格納
 		File[] files = new File(args[0]).listFiles();
@@ -49,8 +48,8 @@ public class CalculateSales {
 		//今後扱うファイルを格納するArrayList準備
 		List<File> rcdFiles = new ArrayList<>();
 
-//
-//		//filesに格納されたファイル(ディレクトリ)達の名前を拾ってくる
+
+		//filesに格納されたファイル(ディレクトリ)が条件にあっているか判定
 		for(int i = 0; i < files.length; i++) {
 			String filesName = files[i].getName();
 
@@ -89,10 +88,18 @@ public class CalculateSales {
 		} catch(IOException e) {
 			System.out.println(UNKNOWN_ERROR);
 			return ;
+		} finally {
+			// ファイルを開いている場合
+			if(br != null) {
+				try {
+					// ファイルを閉じる
+					br.close();
+				} catch(IOException e) {
+					System.out.println(UNKNOWN_ERROR);
+					return ;
+				}
+			}
 		}
-
-
-
 
 		// 支店別集計ファイル書き込み処理
 		if(!writeFile(args[0], FILE_NAME_BRANCH_OUT, branchNames, branchSales)) {
