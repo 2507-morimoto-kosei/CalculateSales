@@ -55,7 +55,7 @@ public class CalculateSales {
 		//filesに格納されたファイル(ディレクトリ)が条件にあっているか判定
 		for(int i = 0; i < files.length; i++) {
 			String filesName = files[i].getName();
-			//ファイル名が「数字8桁.rcd」だったらrcdFilesに書き込み
+			//ファイルかつファイル名が「数字8桁.rcd」だったらrcdFilesに書き込み
 			if(files[i].isFile() && filesName.matches("^[0-9]{8}[.]rcd$")) {
 				rcdFiles.add(files[i]);
 			}
@@ -71,6 +71,7 @@ public class CalculateSales {
 			//ファイル名を比較して連番になっているか確認
 			if((latter - former) != 1) {
 				System.out.println("売上ファイル名が連番になっていません");
+				return;
 			}
 		}
 		//rcdFilesに格納されているファイルを一個ずつ見ていく
@@ -86,19 +87,19 @@ public class CalculateSales {
 				// 一行ずつ取り出してリストに追加
 				while((line = br.readLine()) != null) {
 					lines.add(line);
-					//支店コードに対応する支店名があるか確認する
-					if(!branchNames.containsKey(lines.get(0))) {
-						System.out.println(rcdFiles.get(i).getName() + "の支店コードが不正です");
-						return;
-					}
 				}
 				//売上ファイルの中身が3行以上あるか確認
 				if(lines.size() != 2) {
 					System.out.println(rcdFiles.get(i).getName() + "のフォーマットが不正です");
 					return;
 				}
+				//支店コードに対応する支店名があるか確認する
+				if(!branchNames.containsKey(lines.get(0))) {
+					System.out.println(rcdFiles.get(i).getName() + "の支店コードが不正です");
+					return;
+				}
 				//売上ファイルの売上金額が数字であるか確認
-				if(!lines.get(1).matches("")) {
+				if(!lines.get(1).matches("^[0-9]+$")) {
 					System.out.println(UNKNOWN_ERROR);
 					return;
 				}
@@ -162,15 +163,13 @@ public class CalculateSales {
 			while((line = br.readLine()) != null) {
 				// ※ここの読み込み処理を変更してください。(処理内容1-2)
 				String[] items = line.split(",");
-				String shopCord = items[0];
-				String shopName = items[1];
 				//支店定義ファイルのフォーマット確認
-				if((items.length != 2) || (!shopCord.matches("^[0-9]{3}"))) {
+				if((items.length != 2) || (!items[0].matches("^[0-9]{3}"))) {
 					System.out.println(FILE_INVALID_FORMAT);
 					return false;
 				}
-				branchNames.put(shopCord, shopName);
-				branchSales.put(shopCord, (long)0);
+				branchNames.put(items[0], items[1]);
+				branchSales.put(items[0], (long)0);
 			}
 		} catch(IOException e) {
 			System.out.println(UNKNOWN_ERROR);
