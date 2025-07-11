@@ -17,6 +17,9 @@ public class CalculateSales {
 	// 支店定義ファイル名
 	private static final String FILE_NAME_BRANCH_LST = "branch.lst";
 
+	//商品定義ファイル名
+	private static final String FILE_NAME_COMMODITY_LST = "commodity.lst";
+
 	// 支店別集計ファイル名
 	private static final String FILE_NAME_BRANCH_OUT = "branch.out";
 
@@ -43,8 +46,14 @@ public class CalculateSales {
 		Map<String, String> branchNames = new HashMap<>();
 		// 支店コードと売上金額を保持するMap
 		Map<String, Long> branchSales = new HashMap<>();
+		//商品コードと商品名を保持するMap
+		Map<String, String> commodityNames = new HashMap<>();
 		// 支店定義ファイル読み込み処理
 		if(!readFile(args[0], FILE_NAME_BRANCH_LST, branchNames, branchSales)) {
+			return;
+		}
+		//商品定義ファイル読み込み処理
+		if(!readCommodityFile(args[0], FILE_NAME_COMMODITY_LST, branchNames, branchSales, commodityNames)) {
 			return;
 		}
 
@@ -173,6 +182,55 @@ public class CalculateSales {
 				}
 				branchNames.put(items[0], items[1]);
 				branchSales.put(items[0], (long)0);
+			}
+		} catch(IOException e) {
+			System.out.println(UNKNOWN_ERROR);
+			return false;
+		} finally {
+			// ファイルを開いている場合
+			if(br != null) {
+				try {
+					// ファイルを閉じる
+					br.close();
+				} catch(IOException e) {
+					System.out.println(UNKNOWN_ERROR);
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * 商品定義ファイル読み込み処理
+	 *
+	 * @param フォルダパス
+	 * @param ファイル名
+	 * @param 支店コードと支店名を保持するMap
+	 * @param 支店コードと売上金額を保持するMap
+	 * @return 読み込み可否
+	 */
+	private static boolean readCommodityFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales, Map<String, String> commodityNames) {
+		BufferedReader br = null;
+		try {
+			File file = new File(path, fileName);
+			//商品定義ファイルの存在確認
+			if(!file.exists()) {
+				System.out.println(FILE_NOT_EXIST);
+				return false;
+			}
+			FileReader fr = new FileReader(file);
+			br = new BufferedReader(fr);
+			String line;
+			// 商品定義ファイルを一行ずつ読み込む
+			while((line = br.readLine()) != null) {
+				String[] items = line.split(",");
+				//支店定義ファイルのフォーマット確認
+				if(items.length != 2 || !items[0].matches("^c[0-9]+[A-Z]+[a-z]+{8}$")) {
+					System.out.println(FILE_INVALID_FORMAT);
+					return false;
+				}
+				commodityNames.put(items[0], items[1]);
 			}
 		} catch(IOException e) {
 			System.out.println(UNKNOWN_ERROR);
